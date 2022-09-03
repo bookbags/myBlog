@@ -31,8 +31,5 @@ function analyzeMenu(html) {
     const menu = /(?<=h[\d]\s+id=")([\w\W]+?)(?=")/g;
     return html
         .match(menu)
-        .map(item => ({
-            name : item,
-            id: item
-        }));
+        .map(item => ({name: item, id: item}));
 }

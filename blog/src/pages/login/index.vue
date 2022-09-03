@@ -7,17 +7,17 @@
             loop="loop"></video>
         <form>
             <label for="userName">用户<input type="text" id="userName" v-model="logInfo.userName" @change="inspectUserName(logInfo.userName)"/></label>
-            <span>{{userNameError}}</span>
+            <span v-if="userNameError">{{userNameError}}</span>
             <label for="password">密码<input type="password" id="password" v-model="logInfo.password" @change="inspectPassword(logInfo.password)"/></label>
-            <span>{{passwordError}}</span>
-            <button type="button" ref="submit">登录</button>
+            <span v-if="passwordError">{{passwordError}}</span>
+            <button type="button" @click="submit">登录</button>
         </form>
     </div>
 </template>
 
 <script>
     import videoUrl from "@/assets/backVideo.mp4";
-
+    import {login, regist} from "@/api/login.js";
     export default {
         data(){
             return{
@@ -27,30 +27,43 @@
                 logInfo:{
                     userName: "",
                     password: ""
-                }
+                },
             }
         },
-        mounted(){
-            this.$refs.submit.addEventListener("click", ()=>{
-                console.log(this.logInfo);
-            });
+        computed:{
+            isCurrect(){
+                return !this.userNameError && !this.passwordError;
+            }
         },
         methods:{
             inspectUserName(value){
                 console.log("执行");
-                const test = /^(?=.*[a-zA-Z])$/;//包含数字和字母
+                const test = /^(?=.*[a-zA-Z])/;//包含字母
                 if(value.length < 2 || value.length > 6){
                     this.userNameError = "用户名长度为2~6"
                 }else if(!test.test(value)){
-                    this.userNameError = "用户名只能包含字母"
+                    this.userNameError = "用户名必须包含字母"
                 }
             },
             inspectPassword(value){
-                const test = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*_\$\.\@)$/;//包含数字，大小写字符，和特殊字符
-                if(value.length < 5 || value.length > 10){
-                    this.passwordError = "密码长度为5~10"
+                const test = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*(_|\$|\.|@))/;//包含数字，大小写字符，和特殊字符
+                if(value.length < 3 || value.length > 10){
+                    this.passwordError = "密码长度为3~10"
                 }else if(!test.test(value)){
-                    this.passwordError = "只能是数字，小写字母，大写字母，或者_.@$";
+                    this.passwordError = "必须包含数字，小写字母，大写字母，或者_.@$";
+                }
+            },
+            async submit(){
+                if(this.isCurrect){
+                    const result = await login(this.logInfo);
+                    console.log(result);
+                    if(result.code === 200){
+                        this.$router.push("/game");
+                    }else{
+                        alert(result.msg);
+                    }
+                }else{
+                    alert("注意格式");
                 }
             }
         }
